@@ -41,11 +41,12 @@ async fn handler(_qry: HashMap<String, Value>, _body: Vec<u8>) {
         ),
     };
 
-    send_response(
-        200,
-        vec![(String::from("content-type"), String::from("plain/text"))],
-        out.as_bytes().to_vec(),
-    )
+    slack_flows::send_message_to_channel("ik8", "ch_in", text).await;
+    // send_response(
+    //     200,
+    //     vec![(String::from("content-type"), String::from("plain/text"))],
+    //     out.as_bytes().to_vec(),
+    // )
 }
 
 pub async fn custom_gpt(sys_prompt: &str, u_prompt: &str, m_token: u16) -> Option<String> {
