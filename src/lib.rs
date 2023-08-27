@@ -1,5 +1,6 @@
 use dotenv::dotenv;
 // use http_req::{request::Method, request::Request, uri::Uri};
+use flowsnet_platform_sdk::logger;
 use lambda_flows::{request_received, send_response};
 use reqwest::{header, Client, ClientBuilder, Error, Response};
 use serde::Deserialize;
@@ -12,6 +13,8 @@ use web_scraper_flows::get_page_text;
 #[no_mangle]
 #[tokio::main(flavor = "current_thread")]
 pub async fn run() {
+    dotenv().ok();
+    logger::init();
     request_received(handler).await;
 }
 
@@ -19,23 +22,16 @@ async fn handler(_qry: HashMap<String, Value>, _body: Vec<u8>) {
     let url = _qry.get("url").unwrap().as_str().unwrap();
     match get_page_text(&url).await {
         Ok(text) => {
-            send_response(
-                200,
-                vec![(String::from("content-type"), String::from("text/html"))],
-                text.as_bytes().to_vec(),
-            )
-
-            // let sys_prompt = "You're an AI assistant";
-            // let u_prompt = format!("summarize this: {}", text);
-            // let res = custom_gpt(sys_prompt, &u_prompt, 128)
-            //     .await
-            //     .unwrap_or("no summary".to_string());
-
-            // send_response(
-            //     200,
-            //     vec![(String::from("content-type"), String::from("text/html"))],
-            //     res.as_bytes().to_vec(),
-            // )
+            let sys_prompt = "You're an AI assistant";
+            let u_prompt = format!("summarize this: {}", text);
+            match custom_gpt(sys_prompt, &u_prompt, 128).await {
+                Some(res) => send_response(
+                    200,
+                    vec![(String::from("content-type"), String::from("text/html"))],
+                    res.as_bytes().to_vec(),
+                ),
+                None => log::error!("Failed to get response from API"),
+            };
         }
 
         Err(_e) => send_response(
@@ -60,7 +56,6 @@ pub async fn custom_gpt(sys_prompt: &str, u_prompt: &str, m_token: u16) -> Optio
     }
 }
 pub async fn chat(message_obj: Vec<Value>, m_token: u16) -> Result<(String, u32), anyhow::Error> {
-    dotenv().ok();
     let api_token = env::var("OPENAI_API_TOKEN").unwrap();
 
     let mut headers = header::HeaderMap::new();
