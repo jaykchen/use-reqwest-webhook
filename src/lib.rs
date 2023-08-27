@@ -25,11 +25,14 @@ async fn handler(_qry: HashMap<String, Value>, _body: Vec<u8>) {
             let sys_prompt = "You're an AI assistant";
             let u_prompt = format!("summarize this: {}", text);
             match custom_gpt(sys_prompt, &u_prompt, 128).await {
-                Some(res) => send_response(
-                    200,
-                    vec![(String::from("content-type"), String::from("text/html"))],
-                    res.as_bytes().to_vec(),
-                ),
+                Some(res) => {
+                    log::info!("Got response from API: {:?}", res);
+                    send_response(
+                        200,
+                        vec![(String::from("content-type"), String::from("plain/text"))],
+                        res.as_bytes().to_vec(),
+                    )
+                }
                 None => log::error!("Failed to get response from API"),
             };
         }
