@@ -23,19 +23,19 @@ async fn handler(_qry: HashMap<String, Value>, _body: Vec<u8>) {
                 200,
                 vec![(String::from("content-type"), String::from("text/html"))],
                 text.as_bytes().to_vec(),
-            );
-
-            let sys_prompt = "You're an AI assistant";
-            let u_prompt = format!("summarize this: {}", text);
-            let res = custom_gpt(sys_prompt, &u_prompt, 128)
-                .await
-                .unwrap_or("no summary".to_string());
-
-            send_response(
-                200,
-                vec![(String::from("content-type"), String::from("text/html"))],
-                res.as_bytes().to_vec(),
             )
+
+            // let sys_prompt = "You're an AI assistant";
+            // let u_prompt = format!("summarize this: {}", text);
+            // let res = custom_gpt(sys_prompt, &u_prompt, 128)
+            //     .await
+            //     .unwrap_or("no summary".to_string());
+
+            // send_response(
+            //     200,
+            //     vec![(String::from("content-type"), String::from("text/html"))],
+            //     res.as_bytes().to_vec(),
+            // )
         }
 
         Err(_e) => send_response(
