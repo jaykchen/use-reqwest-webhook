@@ -19,6 +19,12 @@ async fn handler(_qry: HashMap<String, Value>, _body: Vec<u8>) {
     let url = _qry.get("url").unwrap().as_str().unwrap();
     match get_page_text(&url).await {
         Ok(text) => {
+            send_response(
+                200,
+                vec![(String::from("content-type"), String::from("text/html"))],
+                text.as_bytes().to_vec(),
+            );
+
             let sys_prompt = "You're an AI assistant";
             let u_prompt = format!("summarize this: {}", text);
             let res = custom_gpt(sys_prompt, &u_prompt, 128)
