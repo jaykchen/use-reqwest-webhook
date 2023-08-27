@@ -20,6 +20,7 @@ pub async fn run() {
 
 async fn handler(_qry: HashMap<String, Value>, _body: Vec<u8>) {
     let url = _qry.get("url").unwrap().as_str().unwrap();
+    let mut out = String::new();
     match get_page_text(&url).await {
         Ok(text) => {
             let sys_prompt = "You're an AI assistant";
@@ -27,22 +28,24 @@ async fn handler(_qry: HashMap<String, Value>, _body: Vec<u8>) {
             match custom_gpt(sys_prompt, &u_prompt, 128).await {
                 Some(res) => {
                     log::info!("Got response from API: {:?}", res);
-                    send_response(
-                        200,
-                        vec![(String::from("content-type"), String::from("plain/text"))],
-                        res.as_bytes().to_vec(),
-                    )
+                    out = res;
                 }
                 None => log::error!("Failed to get response from API"),
             };
         }
 
         Err(_e) => send_response(
-            200,
+            400,
             vec![(String::from("content-type"), String::from("text/html"))],
             _e.as_bytes().to_vec(),
         ),
     };
+
+    send_response(
+        200,
+        vec![(String::from("content-type"), String::from("plain/text"))],
+        out.as_bytes().to_vec(),
+    )
 }
 
 pub async fn custom_gpt(sys_prompt: &str, u_prompt: &str, m_token: u16) -> Option<String> {
