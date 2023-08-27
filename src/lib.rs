@@ -41,7 +41,7 @@ async fn handler(_qry: HashMap<String, Value>, _body: Vec<u8>) {
         ),
     };
 
-    slack_flows::send_message_to_channel("ik8", "ch_in", text).await;
+    slack_flows::send_message_to_channel("ik8", "ch_in", out).await;
     // send_response(
     //     200,
     //     vec![(String::from("content-type"), String::from("plain/text"))],
